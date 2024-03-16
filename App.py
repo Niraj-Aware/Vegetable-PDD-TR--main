@@ -94,11 +94,4 @@ elif selected_option == 'Pepper':
     detect_disease(PEPPER_MODEL, pepper_classes)
 else:
     st.write("Plant not available")
-```
 
-This code fixes the following issues:
-
-1. Corrected the condition checks in `detect_disease()` function.
-2. Improved code readability and maintained consistency.
-3. Added placeholder logic for Tomato and Pepper disease detection. You can implement similar logic for these plants.
-4. Improved variable names for better understanding.
