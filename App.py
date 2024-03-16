@@ -8,7 +8,7 @@ import base64
 import cv2
 
 # Load models and class names
-MODEL = tf.keras.models.load_model('./potato_trained_models/1/')
+MODEL = tf.keras.models.load_model('./potato_trained_models/1')
 #MODEL = tf.keras.models.load_model('tomato.h5')
 TOMATO_MODEL = tf.keras.models.load_model('./tomato_trained_models/1')
 #TOMATO_MODEL = tf.keras.models.load_model('tomato.h5')
