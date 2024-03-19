@@ -1,6 +1,5 @@
-opencv-python
-numpy
-matplotlib
-streamlit
-scikit-learn
-keras
+streamlit==0.88.0
+numpy==1.21.2
+Pillow==8.4.0
+opencv-python==4.5.3.56
+tensorflow==2.7.0
