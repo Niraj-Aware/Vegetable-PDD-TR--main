@@ -3,14 +3,10 @@ import numpy as np
 import streamlit as st
 import cv2
 from keras.models import load_model
+import tensorflow as tf
 
-# Loading the Model (Replace './dataset/disease.h5' with the path to your tomato disease model)
-model = load_model('./tomato_trained_models/1')
-
-# Name of Classes for Tomato Diseases
-CLASS_NAMES = ['Tomato___Bacterial_spot', 'Tomato___Early_blight', 'Tomato___Late_blight', 'Tomato___Leaf_Mold',
-               'Tomato___Septoria_leaf_spot', 'Tomato___Spider_mites Two-spotted_spider_mite',
-               'Tomato___Target_Spot', 'Tomato___Tomato_mosaic_virus', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus']
+# Loading the Model (Replace './tomato_trained_models/1' with the path to your tomato disease model)
+model = tf.keras.models.load_model('./tomato_trained_models/1')
 
 # Setting Title of App
 st.title("Tomato Plant Disease Detection")
@@ -39,5 +35,5 @@ if st.button('Predict'):
         # Make Prediction
         predictions = model.predict(opencv_image)
         predicted_class_index = np.argmax(predictions)
-        predicted_class = CLASS_NAMES[predicted_class_index]
+        predicted_class = model.classes_[predicted_class_index]  # Assuming your model has classes_ attribute
         st.title(f"This is a tomato leaf with {predicted_class.replace('_', ' ')}")
