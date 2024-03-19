@@ -3,11 +3,12 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 import cv2
+from keras.models import load_model
 
-# Load models and class names
-MODEL = tf.keras.models.load_model('./tomato_trained_models/1')
-TOMATO_MODEL = tf.keras.models.load_model('./tomato_trained_models/1')
-PEPPER_MODEL = tf.keras.models.load_model('./pepper_trained_models/1')
+#Loading the Model
+MODEL = load_model('./dataset/disease.h5')
+TOMATO_MODEL = load_model('./tomato_trained_models/1')
+PEPPER_MODEL = load_model('./pepper_trained_models/1')
 class_names = ['Potato___Early_blight', 'Potato___Late_blight', 'Potato___healthy']
 tomato_classes = ['Tomato_healthy', 'Tomato_Spider_mites_Two_spotted_spider_mite', 'Tomato__Target_Spot', 'Tomato_Septoria_leaf_spot',
  'Tomato__Tomato_mosaic_virus', 'Tomato_Leaf_Mold', 'Tomato_Bacterial_spot', 'Tomato_Late_blight',
