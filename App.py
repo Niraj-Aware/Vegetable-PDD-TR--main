@@ -5,7 +5,7 @@ import cv2
 from keras.models import load_model
 
 # Loading the Model (Replace './dataset/disease.h5' with the path to your tomato disease model)
-model = load_model('tomato.h5')
+model = load_model('./tomato_trained_models/1')
 
 # Name of Classes for Tomato Diseases
 CLASS_NAMES = ['Tomato___Bacterial_spot', 'Tomato___Early_blight', 'Tomato___Late_blight', 'Tomato___Leaf_Mold',
