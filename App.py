@@ -6,7 +6,7 @@ from keras.models import load_model
 import tensorflow as tf
 
 # Loading the Model (Replace './tomato_trained_models/1' with the path to your tomato disease model)
-model = tf.keras.models.load_model('./tomato.h5')
+model = tf.keras.models.load_model('tomato.h5')
 
 # Setting Title of App
 st.title("Tomato Plant Disease Detection")
