@@ -1,56 +1,87 @@
-# Import Required Libraries
-import numpy as np
-import pickle
-import cv2
-import os
-import matplotlib.pyplot as plt
+# Import necessary libraries
 import streamlit as st
+import numpy as np
+from io import BytesIO
+from PIL import Image
+import tensorflow as tf
+import base64
+import cv2
+import requests
 
-# Load plant disease classification model
-filename = 'plant_disease_classification_model.pkl'
-model = pickle.load(open(filename, 'rb'))
+# Load models and class names
+# MODEL = tf.keras.models.load_model('./potato_trained_models/1/')
+MODEL = tf.keras.models.load_model('tomato.h5')
 
-# Load plant disease labels
-filename = 'plant_disease_label_transform.pkl'
-image_labels = pickle.load(open(filename, 'rb'))
+# Set Streamlit page config
+st.set_page_config(
+    layout="wide",
+    page_title='Plant Disease Detection',
+)
+st.title("Plant Disease Detection & Treatment Recommendation System")
+st.write("This application detects diseases in three plants: potato, tomato, and pepper")
+options = ["Select One Plant", "Tomato", "Potato", "Pepper"]
 
-# Dimensions of resized image
-DEFAULT_IMAGE_SIZE = (256, 256)
+# Create a selectbox for the user to choose one option
+selected_option = st.selectbox("Select Plant:", options)
 
-def convert_image_to_array(image):
-    image = cv2.resize(image, DEFAULT_IMAGE_SIZE)   
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
+
+def read_file_as_image(data) -> np.array:
+    image = np.array(data)
+    image = cv2.resize(image, (256, 256))
     return image
 
-def detect_disease(image_path):
-    image = cv2.imread(image_path)
-    image_array = convert_image_to_array(image)
-    np_image = np.array(image_array, dtype=np.float16) / 225.0
-    np_image = np.expand_dims(np_image, 0)
-    result = model.predict_classes(np_image)
-    predicted_class = image_labels.classes_[result][0]
-    confidence = model.predict_proba(np_image).max()
-    return predicted_class, confidence
-
-# Update the detect_disease function in your Streamlit app
 def detect_disease(model, class_names):
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         st.image(image, caption="Uploaded Image", width=250)
-        predicted_class, confidence = detect_disease(uploaded_file)
+        image = read_file_as_image(image)
+        image_batch = np.expand_dims(image, axis=0)
+        predictions = model.predict(image_batch)
+        predicted_class = class_names[np.argmax(predictions[0])]
+        confidence = np.max(predictions[0])
         
         # Disease-specific recommendations
-        # Add your recommendations logic here
+        if predicted_class=="Potato___Early_blight" in predicted_class:
+            st.write("Disease Detected: Potato Early Blight")
+            st.write("Recommendations:")
+            st.write("1. Fungicide Application: Use fungicides containing active ingredients like chlorothalonil, mancozeb, or copper-based compounds. Follow manufacturer's instructions.")
+            st.write("2. Crop Rotation: Avoid planting potatoes in the same area year after year.")
+            st.write("3. Proper Spacing: Plant potatoes at recommended spacing for good air circulation.")
+            st.write("4. Remove Infected Leaves: Early removal of infected leaves is crucial.")
+            st.write("5. Mulching: Apply mulch around the base of plants to prevent soil splashing onto leaves.")
         
+        elif predicted_class=="Potato___Late_blight" in predicted_class:
+            st.write("Disease Detected: Potato Late Blight")
+            st.write("Recommendations:")
+            st.write("1. Fungicide Application: Use fungicides containing active ingredients like copper, mancozeb, or systemic fungicides like chlorothalonil.")
+            st.write("2. Proper Watering: Avoid overhead watering to reduce leaf wetness.")
+            st.write("3. Crop Rotation: Rotate crops to prevent pathogen buildup.")
+            st.write("4. Plant Resistant Varieties: Consider resistant potato varieties.")
+            st.write("5. Early Detection: Monitor plants for signs of late blight; take action immediately.")
+        
+        elif predicted_class=="Potato___healthy" in predicted_class:
+            st.write("Plant is Healthy (General Maintenance)")
+            st.write("Recommendations:")
+            st.write("1. Proper Planting: Use certified disease-free potato seed pieces.")
+            st.write("2. Crop Rotation: Practice crop rotation to prevent disease buildup in the soil.")
+            st.write("3. Fertilization: Apply balanced fertilizers based on soil test results.")
+            st.write("4. Weed Control: Keep the area around potatoes weed-free.")
+            st.write("5. Monitoring: Regularly inspect plants for signs of disease, pests, or nutrient deficiencies.")
+            st.write("6. Harvest and Storage: Handle harvested potatoes gently and store them in cool, dark, well-ventilated conditions.")
+
+        # Add conditions for other classes here...
+
         st.write("Predicted Class : ", predicted_class, " Confidence Level : ", confidence)
         st.write("")
         st.write("To obtain more details and accurate treatment, please visit the nearest pharmaceutical or plant pharma facility")
-
-# Use detect_disease function in your Streamlit app based on the selected option
 if selected_option == 'Potato':
-    detect_disease(model, class_names)
+    detect_disease(MODEL, class_names)
 elif selected_option == 'Tomato':
-    detect_disease(model, class_names)
-elif selected_option == 'Corn':
-    detect_disease(model, class_names)
+    model_url = 'https://github.com/Niraj-Aware/Vegetable-PDD-TR--main/blob/main/tomato_trained_models/1/saved_model.pb'
+    tomato_model = tf.keras.models.load_model(model_url)
+    detect_disease(tomato_model, tomato_classes)
+elif selected_option == 'Pepper':
+    detect_disease(PEPPER_MODEL, pepper_classes)
 else:
     st.write("Plant not available")
