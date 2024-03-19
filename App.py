@@ -1,50 +1,56 @@
-#Library imports
+# Import Required Libraries
 import numpy as np
-import streamlit as st
+import pickle
 import cv2
-from keras.models import load_model
+import os
+import matplotlib.pyplot as plt
+import streamlit as st
 
-#Loading the Model
-model = load_model('./dataset/disease.h5')
+# Load plant disease classification model
+filename = 'plant_disease_classification_model.pkl'
+model = pickle.load(open(filename, 'rb'))
 
-#Name of Classes
-CLASS_NAMES = ['Corn-Common_rust', 'Potato-Early_blight', 'Tomato-Bacterial_spot']
+# Load plant disease labels
+filename = 'plant_disease_label_transform.pkl'
+image_labels = pickle.load(open(filename, 'rb'))
 
-#Setting Title of App
-st.title("Plant Disease Detection")
-st.markdown("Upload an image of the plant leaf")
+# Dimensions of resized image
+DEFAULT_IMAGE_SIZE = (256, 256)
 
-#Uploading the dog image
-plant_image = st.file_uploader("Choose an image...", type="jpg")
-submit = st.button('Predict')
-#On predict button click
-if submit:
-    if plant_image is not None:
-        # Convert the file to an OpenCV image.
-        file_bytes = np.asarray(bytearray(plant_image.read()), dtype=np.uint8)
-        opencv_image = cv2.imdecode(file_bytes, 1)
+def convert_image_to_array(image):
+    image = cv2.resize(image, DEFAULT_IMAGE_SIZE)   
+    return image
 
-        # Displaying the image
-        st.image(opencv_image, channels="BGR")
-        st.write(opencv_image.shape)
+def detect_disease(image_path):
+    image = cv2.imread(image_path)
+    image_array = convert_image_to_array(image)
+    np_image = np.array(image_array, dtype=np.float16) / 225.0
+    np_image = np.expand_dims(np_image, 0)
+    result = model.predict_classes(np_image)
+    predicted_class = image_labels.classes_[result][0]
+    confidence = model.predict_proba(np_image).max()
+    return predicted_class, confidence
+
+# Update the detect_disease function in your Streamlit app
+def detect_disease(model, class_names):
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Uploaded Image", width=250)
+        predicted_class, confidence = detect_disease(uploaded_file)
         
-        # Resizing the image
-        opencv_image = cv2.resize(opencv_image, (256,256))
-        # Convert image to 4 Dimension
-        opencv_image.shape = (1,256,256,3)
-        # Make Prediction
-        Y_pred = model.predict(opencv_image)
-        result = CLASS_NAMES[np.argmax(Y_pred)]
+        # Disease-specific recommendations
+        # Add your recommendations logic here
         
-        # Displaying disease and recommendations
-        st.header(f"Disease detected: {result.split('-')[0]} leaf with {result.split('-')[1]}")
-        
-        if result == 'Tomato-Bacterial_spot':
-            st.subheader("Recommendations:")
-            st.write("1. Use disease-free seeds or transplants.")
-            st.write("2. Practice crop rotation to avoid soilborne diseases.")
-            st.write("3. Use drip irrigation to avoid wetting the foliage.")
-            st.write("4. Apply copper-based fungicides.")
-            st.write("5. Remove and destroy infected plants promptly.")
-        else:
-            st.write("No recommendations available for this disease.")
+        st.write("Predicted Class : ", predicted_class, " Confidence Level : ", confidence)
+        st.write("")
+        st.write("To obtain more details and accurate treatment, please visit the nearest pharmaceutical or plant pharma facility")
+
+# Use detect_disease function in your Streamlit app based on the selected option
+if selected_option == 'Potato':
+    detect_disease(model, class_names)
+elif selected_option == 'Tomato':
+    detect_disease(model, class_names)
+elif selected_option == 'Corn':
+    detect_disease(model, class_names)
+else:
+    st.write("Plant not available")
